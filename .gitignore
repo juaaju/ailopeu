@@ -1,0 +1,14 @@
+test.mp4
+pybluez
+video_path.py
+crop_frame.py
+not_used
+utils
+temp_images/
+plnuniv/
+runs/
+env/
+models/
+yolo11n.pt
+exported_data/
+__pycache__/
