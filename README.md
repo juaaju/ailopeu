@@ -6,6 +6,10 @@ An AI-powered detection system designed to enhance workplace safety by identifyi
 
 ## User Interface Screenshots
 
+### Login Page
+
+![Login Page](images/aids.png)
+
 ### Main Dashboard
 
 ![Main Dashboard](images/aids.png)
