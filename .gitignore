@@ -12,3 +12,4 @@ models/
 yolo11n.pt
 exported_data/
 __pycache__/
+mqttservice/.env

@@ -8,11 +8,11 @@ An AI-powered detection system designed to enhance workplace safety by identifyi
 
 ### Login Page
 
-![Login Page](images/aids.png)
+![Login Page](images/login.png)
 
 ### Main Dashboard
 
-![Main Dashboard](images/aids.png)
+![Main Dashboard](images/dahboard.png)
 
 ### Violation Log
 
