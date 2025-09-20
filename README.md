@@ -12,7 +12,7 @@ An AI-powered detection system designed to enhance workplace safety by identifyi
 
 ### Main Dashboard
 
-![Main Dashboard](images/dahboard.png)
+![Main Dashboard](images/dashboard.png)
 
 ### Violation Log
 
