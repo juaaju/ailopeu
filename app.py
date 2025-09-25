@@ -19,6 +19,9 @@ from components.login import LoginView
 from core.videostream import OriginalStream, CamStream
 from core.utils import crop, calculate_iou, calculate_red_pixel_std, save_frame, play_sound_async
 
+# mqtt util
+from mqttservice.publisher import publish_message
+
 async def start_detection(cam_stream, model, processed_video, feature_pick):
     global frame_processed
     frame_processed = 0  # Reset counter when starting detection
@@ -127,6 +130,8 @@ async def predict_line_of_fire(model, img, frame_count, conf=0.3):
             print('Area not clear')
             # Ganti playsound dengan versi async
             play_sound_async('alerts/alert_lof.mp3')
+            # kirim lewat mqqt
+            publish_message('Area not clear')
             # Tidak perlu time.sleep lagi karena sound dijalankan di thread terpisah
             export_data.write_to_excel(ws, image_folder, 'Area not clear', img, current_time, frame_count)
         else:
