@@ -10,6 +10,7 @@ import shutil
 from flet import *
 import asyncio
 import core.export_data as export_data
+from core.virtualdanger import visualize_radius
 import serial
 # Create a new file called video_path.py and add your video/cctv rtsp url
 import video_path
@@ -111,23 +112,55 @@ async def predict_line_of_fire(model, img, frame_count, conf=0.3):
                     tractor_coords = [lx, ux, ly, uy]
                     bbox_color = (0, 0, 255)
                     print(lx)
+                    img, _ = visualize_radius(img, [[lx, ux, ly, uy]])
                 elif name == 'person':
                     person_coords.append([lx, ux, ly, uy])
 
                 cv2.rectangle(img, (lx, ly), (ux, uy), bbox_color, 1)
                 cv2.putText(img, name + ':' + str(round(confidence, 2)), (int(bbox[0]), int(bbox[1] - 40)),
                             cv2.FONT_HERSHEY_COMPLEX, 0.5, bbox_color, 1)
+            
+    # if tractor_coords and person_coords:
+    #     print(tractor_coords)
+    #     print(person_coords)
+    #     iou_values = [calculate_iou(tractor_coords, person) for person in person_coords]
+    #     print(iou_values)
+    #     if any(iou > 0 for iou in iou_values):
+    #         print('Area not clear')
+    #         # Ganti playsound dengan versi async
+    #         play_sound_async('alerts/alert_lof.mp3')
+    #         # Tidak perlu time.sleep lagi karena sound dijalankan di thread terpisah
+    #         export_data.write_to_excel(ws, image_folder, 'Area not clear', img, current_time, frame_count)
+    #     else:
+    #         print('Area clear')
 
     if tractor_coords and person_coords:
-        print(tractor_coords)
-        print(person_coords)
-        iou_values = [calculate_iou(tractor_coords, person) for person in person_coords]
-        print(iou_values)
-        if any(iou > 0 for iou in iou_values):
+        lx, ux, ly, uy = tractor_coords
+        w_box, h_box = ux - lx, uy - ly
+        cx, cy = lx + w_box // 2, uy   # bawah tengah bbox traktor
+
+        # --- Skala elips sama seperti di visualize_radius
+        scale = max(0.3, h_box / 120)
+        axes_near = (int(120 * scale), int(50 * scale))   # radius dekat
+        axes_far = (int(200 * scale), int(90 * scale))    # radius jauh
+
+        def point_in_ellipse(px, py, center, axes):
+            cx, cy = center
+            rx, ry = axes
+            return ((px - cx) ** 2) / (rx ** 2) + ((py - cy) ** 2) / (ry ** 2) <= 1
+
+        # cek semua orang
+        inside_flags = []
+        for (plx, pux, ply, puy) in person_coords:
+            px, py = (plx + pux) // 2, (ply + puy) // 2  # pusat orang
+            in_near = point_in_ellipse(px, py, (cx, cy), axes_near)
+            in_far = point_in_ellipse(px, py, (cx, cy), axes_far)
+            inside_flags.append(in_near or in_far)
+            print(f"Person {(px, py)} inside ellipse? near={in_near}, far={in_far}")
+
+        if any(inside_flags):
             print('Area not clear')
-            # Ganti playsound dengan versi async
-            play_sound_async('alerts/alert_lof.mp3')
-            # Tidak perlu time.sleep lagi karena sound dijalankan di thread terpisah
+            play_sound_async('alerts/alert_lof.mp3') # ganti dengan pesan ke broker
             export_data.write_to_excel(ws, image_folder, 'Area not clear', img, current_time, frame_count)
         else:
             print('Area clear')
